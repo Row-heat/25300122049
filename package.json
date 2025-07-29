@@ -8,20 +8,23 @@
     "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["url-shortener", "backend", "express", "nodejs"],
+  "keywords": [
+    "url-shortener",
+    "backend",
+    "express",
+    "nodejs"
+  ],
   "author": "Rohit",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "nanoid": "^3.3.7",
     "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "axios": "^1.6.0",
+    "express": "^5.1.0",
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^3.3.7",
     "uuid": "^9.0.1"
   },
   "engines": {

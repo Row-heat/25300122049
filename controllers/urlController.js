@@ -1,30 +1,26 @@
 const { nanoid } = require("nanoid");
 const dayjs = require("dayjs");
 
-let urlDatabase = {}; // In-memory store
+let urlDatabase = {};
 
-// Create Short URL
 const createShortUrl = async (req, res) => {
     try {
         const { url, validity, shortcode } = req.body;
-        const user = req.user; // From auth middleware
+        const user = req.user;
         
-        // Validate URL
         if (!url || !/^https?:\/\/.+/i.test(url)) {
             return res.status(400).json({ 
                 message: "Invalid URL format. URL must start with http:// or https://" 
             });
         }
 
-        // Validate custom shortcode if provided
         if (shortcode && (!/^[a-zA-Z0-9_-]+$/.test(shortcode) || shortcode.length > 20)) {
             return res.status(400).json({ 
                 message: "Invalid shortcode. Use only alphanumeric characters, hyphens, and underscores (max 20 chars)" 
             });
         }
 
-        // Validate validity period
-        if (validity && (validity < 1 || validity > 10080)) { // Max 1 week
+        if (validity && (validity < 1 || validity > 10080)) {
             return res.status(400).json({ 
                 message: "Validity must be between 1 and 10080 minutes (1 week)" 
             });
@@ -64,7 +60,6 @@ const createShortUrl = async (req, res) => {
     }
 };
 
-// Redirect to original URL
 const redirectUrl = async (req, res) => {
     try {
         const { code } = req.params;
@@ -78,7 +73,6 @@ const redirectUrl = async (req, res) => {
             return res.status(410).json({ message: "Link expired" });
         }
 
-        // Log the click
         entry.clicks.push({
             timestamp: new Date().toISOString(),
             source: req.get("Referer") || "direct",
@@ -93,7 +87,6 @@ const redirectUrl = async (req, res) => {
     }
 };
 
-// Retrieve statistics
 const getStats = async (req, res) => {
     try {
         const { code } = req.params;
@@ -118,7 +111,6 @@ const getStats = async (req, res) => {
     }
 };
 
-// Get all URLs (for admin/debugging purposes)
 const getAllUrls = async (req, res) => {
     try {
         const user = req.user;
@@ -132,9 +124,6 @@ const getAllUrls = async (req, res) => {
             createdBy: urlDatabase[code].createdBy
         }));
 
-        // If user is authenticated, they can see all URLs
-        // Otherwise, only show public URLs (optional filter)
-        
         return res.status(200).json({
             total: urls.length,
             urls: urls,

@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
-// Default user credentials from your provided data
 const DEFAULT_USER = {
     email: "rohitsingh24685@hmail.com",
     name: "rohit singh",
@@ -11,14 +10,11 @@ const DEFAULT_USER = {
     clientSecret: "PfEeUTFBZJXhZRTt"
 };
 
-// Your provided token
 const PROVIDED_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJyb2hpdHNpbmdoMjQ2ODVAaG1haWwuY29tIiwiZXhwIjoxNzUzNzc0MDk1LCJpYXQiOjE3NTM3NzMxOTUsImlzcyI6IkFmZm9yZCBNZWRpY2FsIFRlY2hub2xvZ2llcyBQcml2YXRlIExpbWl0ZWQiLCJqdGkiOiI4M2Y4NWEzZC01ZDAxLTQ5YmMtYTAzYi1jMmYzZWY3ZmExNzAiLCJsb2NhbGUiOiJlbi1JTiIsIm5hbWUiOiJyb2hpdCBzaW5naCIsInN1YiI6ImU2NDBjY2JkLWQzMjQtNDdhNy05ZmFjLTMyYmI3YzNjY2RlNiJ9LCJlbWFpbCI6InJvaGl0c2luZ2gyNDY4NUBobWFpbC5jb20iLCJuYW1lIjoicm9oaXQgc2luZ2giLCJyb2xsTm8iOiIyNTMwMDEyMjA0OSIsImFjY2Vzc0NvZGUiOiJBWWt3Y2YiLCJjbGllbnRJRCI6ImU2NDBjY2JkLWQzMjQtNDdhNy05ZmFjLTMyYmI3YzNjY2RlNiIsImNsaWVudFNlY3JldCI6IlBmRWVVVEZCWkpYaFpSVHQifQ.WldztVDKxI2IJ459BsrDkDyuQk7kmIXgielfm0g2IfM";
 
-// In-memory storage for demonstration
 let authTokens = {};
 let userSessions = {};
 
-// Simple login endpoint
 const login = async (req, res) => {
     try {
         const { email, accessCode } = req.body;
@@ -66,7 +62,6 @@ const login = async (req, res) => {
     }
 };
 
-// Auto-login endpoint
 const autoLogin = async (req, res) => {
     try {
         const sessionId = uuidv4();
@@ -94,7 +89,6 @@ const autoLogin = async (req, res) => {
     }
 };
 
-// Get user profile
 const getProfile = (req, res) => {
     try {
         const { user } = req;
@@ -115,7 +109,6 @@ const getProfile = (req, res) => {
     }
 };
 
-// Logout
 const logout = (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
@@ -137,7 +130,6 @@ const logout = (req, res) => {
     }
 };
 
-// Verify token for middleware
 const verifyToken = (token) => {
     return authTokens[token] || null;
 };

@@ -2,10 +2,8 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 
-// In-memory log storage (use database in production)
 let logs = {};
 
-// Create log entry
 const createLog = (req, res) => {
     try {
         const { action, details, level = 'info' } = req.body;
@@ -31,10 +29,8 @@ const createLog = (req, res) => {
             userAgent: req.get('User-Agent') || 'unknown'
         };
 
-        // Store in memory
         logs[logID] = logEntry;
 
-        // Also write to file for persistence
         const logDir = path.join(__dirname, '../logs');
         if (!fs.existsSync(logDir)) {
             fs.mkdirSync(logDir, { recursive: true });
@@ -59,14 +55,12 @@ const createLog = (req, res) => {
     }
 };
 
-// Get logs with filtering
 const getLogs = (req, res) => {
     try {
         const { level, action, startDate, endDate, limit = 100 } = req.query;
         
         let filteredLogs = Object.values(logs);
 
-        // Apply filters
         if (level) {
             filteredLogs = filteredLogs.filter(log => log.level === level);
         }
@@ -89,10 +83,8 @@ const getLogs = (req, res) => {
             );
         }
 
-        // Sort by timestamp (newest first)
         filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        // Apply limit
         filteredLogs = filteredLogs.slice(0, parseInt(limit));
 
         res.status(200).json({
@@ -134,14 +126,11 @@ const getLogById = (req, res) => {
     }
 };
 
-// Auto-log middleware for URL operations
 const autoLog = (action, level = 'info') => {
     return (req, res, next) => {
-        // Store original res.json
         const originalJson = res.json;
         
         res.json = function(data) {
-            // Create log entry
             const logID = uuidv4();
             const logEntry = {
                 logID,
@@ -166,7 +155,6 @@ const autoLog = (action, level = 'info') => {
 
             logs[logID] = logEntry;
 
-            // Write to file
             try {
                 const logDir = path.join(__dirname, '../logs');
                 if (!fs.existsSync(logDir)) {
@@ -181,7 +169,6 @@ const autoLog = (action, level = 'info') => {
                 console.error('Error writing to log file:', writeError);
             }
 
-            // Call original res.json
             return originalJson.call(this, data);
         };
 

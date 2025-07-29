@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../controllers/authController');
 
-// Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({ 
@@ -13,7 +12,6 @@ const authenticateToken = (req, res, next) => {
         });
     }
 
-    // Verify token using our auth controller
     const tokenData = verifyToken(token);
     
     if (!tokenData) {
@@ -23,7 +21,6 @@ const authenticateToken = (req, res, next) => {
         });
     }
 
-    // Check if token is expired
     const now = new Date();
     const expiryDate = new Date(tokenData.expiresAt);
     
@@ -38,7 +35,6 @@ const authenticateToken = (req, res, next) => {
     next();
 };
 
-// Optional authentication - doesn't fail if no token
 const optionalAuth = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -58,11 +54,9 @@ const optionalAuth = (req, res, next) => {
     next();
 };
 
-// Middleware to verify specific user access
 const verifyUserAccess = (req, res, next) => {
     const { user } = req;
     
-    // Check if user has the required access code
     if (user.accessCode !== "AYkwcf") {
         return res.status(403).json({
             message: 'Access denied - invalid access code',
