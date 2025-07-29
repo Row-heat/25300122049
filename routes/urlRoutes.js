@@ -1,32 +1,25 @@
 const express = require("express");
 const { createShortUrl, redirectUrl, getStats, getAllUrls } = require("../controllers/urlController");
-const { authenticateToken, verifyUserAccess } = require("../middleware/auth");
-const { autoLog } = require("../controllers/logController");
+const { authenticateToken, optionalAuth, verifyUserAccess } = require("../middleware/auth");
 const router = express.Router();
 
-// Protected routes (require authentication)
+// Routes with optional authentication (work better with or without auth)
 router.post("/shorturls", 
-    authenticateToken, 
-    verifyUserAccess, 
-    autoLog('CREATE'), 
+    optionalAuth, 
     createShortUrl
 );
 
 router.get("/shorturls", 
-    authenticateToken, 
-    verifyUserAccess, 
-    autoLog('LIST'), 
+    optionalAuth, 
     getAllUrls
 );
 
 router.get("/shorturls/:code", 
-    authenticateToken, 
-    verifyUserAccess, 
-    autoLog('STATS'), 
+    optionalAuth, 
     getStats
 );
 
 // Public route (no authentication required for redirection)
-router.get("/:code", autoLog('REDIRECT'), redirectUrl);
+router.get("/:code", redirectUrl);
 
 module.exports = router;

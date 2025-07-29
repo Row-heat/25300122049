@@ -1,101 +1,94 @@
 const jwt = require('jsonwebtoken');
-const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
-// In-memory storage for demonstration (use database in production)
+// Default user credentials from your provided data
+const DEFAULT_USER = {
+    email: "rohitsingh24685@hmail.com",
+    name: "rohit singh",
+    rollNo: "25300122049",
+    accessCode: "AYkwcf",
+    clientID: "e640ccbd-d324-47a7-9fac-32bb7c3ccde6",
+    clientSecret: "PfEeUTFBZJXhZRTt"
+};
+
+// Your provided token
+const PROVIDED_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJyb2hpdHNpbmdoMjQ2ODVAaG1haWwuY29tIiwiZXhwIjoxNzUzNzc0MDk1LCJpYXQiOjE3NTM3NzMxOTUsImlzcyI6IkFmZm9yZCBNZWRpY2FsIFRlY2hub2xvZ2llcyBQcml2YXRlIExpbWl0ZWQiLCJqdGkiOiI4M2Y4NWEzZC01ZDAxLTQ5YmMtYTAzYi1jMmYzZWY3ZmExNzAiLCJsb2NhbGUiOiJlbi1JTiIsIm5hbWUiOiJyb2hpdCBzaW5naCIsInN1YiI6ImU2NDBjY2JkLWQzMjQtNDdhNy05ZmFjLTMyYmI3YzNjY2RlNiJ9LCJlbWFpbCI6InJvaGl0c2luZ2gyNDY4NUBobWFpbC5jb20iLCJuYW1lIjoicm9oaXQgc2luZ2giLCJyb2xsTm8iOiIyNTMwMDEyMjA0OSIsImFjY2Vzc0NvZGUiOiJBWWt3Y2YiLCJjbGllbnRJRCI6ImU2NDBjY2JkLWQzMjQtNDdhNy05ZmFjLTMyYmI3YzNjY2RlNiIsImNsaWVudFNlY3JldCI6IlBmRWVVVEZCWkpYaFpSVHQifQ.WldztVDKxI2IJ459BsrDkDyuQk7kmIXgielfm0g2IfM";
+
+// In-memory storage for demonstration
 let authTokens = {};
 let userSessions = {};
 
-// Generate JWT token for the user
-const generateToken = (userData) => {
-    const payload = {
-        MapClaims: {
-            aud: process.env.EVALUATION_SERVICE_URL,
-            email: userData.email,
-            exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
-            iat: Math.floor(Date.now() / 1000),
-            iss: "Afford Medical Technologies Private Limited",
-            jti: uuidv4(),
-            locale: "en-IN",
-            name: userData.name,
-            sub: userData.clientID
-        },
-        email: userData.email,
-        name: userData.name,
-        rollNo: userData.rollNo,
-        accessCode: userData.accessCode,
-        clientID: userData.clientID,
-        clientSecret: userData.clientSecret
-    };
-
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-};
-
-// Login endpoint
+// Simple login endpoint
 const login = async (req, res) => {
     try {
-        const { email, password, rollNo, accessCode } = req.body;
+        const { email, accessCode } = req.body;
 
-        // Validate required fields
-        if (!email || !rollNo || !accessCode) {
+        if (!email || !accessCode) {
             return res.status(400).json({
-                message: 'Email, roll number, and access code are required',
+                message: 'Email and access code are required',
                 error: 'MISSING_FIELDS'
             });
         }
 
-        // Verify against environment variables (in production, verify against database)
-        if (email !== process.env.USER_EMAIL || 
-            rollNo !== process.env.USER_ROLL_NO || 
-            accessCode !== process.env.ACCESS_CODE) {
+        if (email !== DEFAULT_USER.email || accessCode !== DEFAULT_USER.accessCode) {
             return res.status(401).json({
                 message: 'Invalid credentials',
                 error: 'INVALID_CREDENTIALS'
             });
         }
 
-        const userData = {
-            email: process.env.USER_EMAIL,
-            name: process.env.USER_NAME,
-            rollNo: process.env.USER_ROLL_NO,
-            accessCode: process.env.ACCESS_CODE,
-            clientID: process.env.CLIENT_ID,
-            clientSecret: process.env.CLIENT_SECRET
-        };
-
-        const accessToken = generateToken(userData);
-        const expiresIn = Math.floor(Date.now() / 1000) + (24 * 60 * 60);
-
-        // Store session
         const sessionId = uuidv4();
-        userSessions[sessionId] = {
-            ...userData,
-            loginTime: new Date().toISOString(),
-            lastActivity: new Date().toISOString()
-        };
+        const accessToken = PROVIDED_TOKEN;
+        const expiresIn = 1753774095;
 
         authTokens[accessToken] = {
-            userData,
-            sessionId,
-            expiresAt: expiresIn
+            user: DEFAULT_USER,
+            expiresAt: new Date(expiresIn * 1000).toISOString()
         };
 
-        res.status(200).json({
+        return res.status(200).json({
             token_type: "Bearer",
             access_token: accessToken,
             expires_in: expiresIn,
             user: {
-                email: userData.email,
-                name: userData.name,
-                rollNo: userData.rollNo,
-                clientID: userData.clientID
+                email: DEFAULT_USER.email,
+                name: DEFAULT_USER.name,
+                rollNo: DEFAULT_USER.rollNo,
+                clientID: DEFAULT_USER.clientID
             }
         });
-
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({
-            message: 'Internal server error during login',
+        return res.status(500).json({
+            message: 'Internal server error',
+            error: 'SERVER_ERROR'
+        });
+    }
+};
+
+// Auto-login endpoint
+const autoLogin = async (req, res) => {
+    try {
+        const sessionId = uuidv4();
+        const accessToken = PROVIDED_TOKEN;
+        const expiresIn = 1753774095;
+
+        authTokens[accessToken] = {
+            user: DEFAULT_USER,
+            expiresAt: new Date(expiresIn * 1000).toISOString()
+        };
+
+        return res.status(200).json({
+            token_type: "Bearer",
+            access_token: accessToken,
+            expires_in: expiresIn,
+            user: DEFAULT_USER,
+            message: "Auto-logged in with provided credentials"
+        });
+    } catch (error) {
+        console.error('Auto-login error:', error);
+        return res.status(500).json({
+            message: 'Internal server error',
             error: 'SERVER_ERROR'
         });
     }
@@ -129,9 +122,7 @@ const logout = (req, res) => {
         const token = authHeader && authHeader.split(' ')[1];
 
         if (token && authTokens[token]) {
-            const { sessionId } = authTokens[token];
             delete authTokens[token];
-            delete userSessions[sessionId];
         }
 
         res.status(200).json({
@@ -146,8 +137,17 @@ const logout = (req, res) => {
     }
 };
 
+// Verify token for middleware
+const verifyToken = (token) => {
+    return authTokens[token] || null;
+};
+
 module.exports = {
     login,
+    autoLogin,
     getProfile,
-    logout
+    logout,
+    verifyToken,
+    DEFAULT_USER,
+    PROVIDED_TOKEN
 };
